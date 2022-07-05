@@ -63,7 +63,8 @@ class GDN(nn.Module):
         gamma = gamma.view(self.num_output_channel, self.num_output_channel, 1, 1)
 
         # normalization, resemble to 2d conv with kernel size set to 1
-        norm = F.conv2d(inputs ** 2, gamma, beta)
+        norm = F.conv2d(inputs ** 2, gamma,
+                        beta)  # 采用二维卷积来实现[batch_size, channel_size, H, W]*[channel_size, channel_size, 1 ,1 ]
         norm = inputs / norm
         if self.inverse:
             outputs = inputs * norm
@@ -73,6 +74,6 @@ class GDN(nn.Module):
 
 
 if __name__ == '__main__':
-    a = torch.randn((2, 4))
-    b = a.transpose(0, 1)
+    a = torch.eye(192)
+    b = a.view(192, 192, 1, 1)
     print(b.size())
