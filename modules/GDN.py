@@ -74,6 +74,8 @@ class GDN(nn.Module):
 
 
 if __name__ == '__main__':
-    a = torch.eye(192)
-    b = a.view(192, 192, 1, 1)
-    print(b.size())
+    a = torch.randn(4,2,2)
+    b = torch.tensor([1,2,3,4]).view(4,1,1)
+    c = a*b
+    print(a)
+    print(c)
