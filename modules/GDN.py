@@ -59,6 +59,8 @@ class GDN(nn.Module):
 
         gamma_p = SetMinBoundary.apply(gamma_p, self.gamma_bound)
         gamma = gamma_p ** 2 - self.reparam_offset
+        # tensor转化为一维
+        gamma = gamma.view(self.num_output_channel, self.num_output_channel, 1, 1)
 
         # normalization, resemble to 2d conv with kernel size set to 1
         norm = F.conv2d(inputs ** 2, gamma, beta)
