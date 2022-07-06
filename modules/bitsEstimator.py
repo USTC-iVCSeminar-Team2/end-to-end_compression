@@ -36,7 +36,7 @@ class BitsEstimator(nn.Module):
     def __init__(self, num_channel, K=4):
         super(BitsEstimator, self).__init__()
         self.num_channel = num_channel
-        self.units = []
+        self.units = nn.ModuleList()
         for i in range(K - 1):
             self.units.append(EstimatorUnit(self.num_channel))
         self.units.append(EstimatorUnit(self.num_channel, tail=True))

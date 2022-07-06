@@ -37,6 +37,9 @@ class ImageCompressor(nn.Module):
 
 if __name__ == '__main__':
     i = ImageCompressor()
-    inputs = torch.randn((8,3,256,256))
+    i = i.cuda()
+    inputs = torch.randn((8,3,256,256)).cuda()
+    print(next(i.parameters()).device)
+    print(inputs.device)
     bits_map, rec_imgs = i(inputs)
     print(bits_map.size())
