@@ -63,4 +63,4 @@ class GDN(nn.Module):
 
 ## Support or Contact
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+You may contact us via our website on https://ustc-ivcseminar-team2.github.io/end-to-end_compression/.
