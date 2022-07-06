@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import math
-from analysis import Analysis_net
+from .analysis import Analysis_net
 from .GDN import GDN
 
 

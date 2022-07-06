@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from GDN import GDN
+from .GDN import GDN
 import math
 
 class Analysis_net(nn.Module):
