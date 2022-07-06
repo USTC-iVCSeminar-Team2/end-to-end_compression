@@ -25,8 +25,31 @@ class EstimatorUnit(nn.Module):
         :return: fk(x)
         """
         h = F.softplus(self.h)  # reparameter to ensure h > 0
-        a = torch.tanh(self.a)  # reparameter to ensure a > -1
+        if not self.tail: a = torch.tanh(self.a)  # reparameter to ensure a > -1
         if self.tail:
             return torch.sigmoid(h * inputs + self.b)  # sigmoid to ensure the range of fx in [0,1]
         else:
             return inputs + a * torch.tanh(inputs)
+
+
+class BitsEstimator(nn.Module):
+    def __init__(self, num_channel, K=4):
+        super(BitsEstimator, self).__init__()
+        self.num_channel = num_channel
+        self.units = []
+        for i in range(K - 1):
+            self.units.append(EstimatorUnit(self.num_channel))
+        self.units.append(EstimatorUnit(self.num_channel, tail=True))
+
+    def forward(self, inputs):
+        x = inputs
+        for unit in self.units:
+            x = unit(x)
+        return x
+
+
+if __name__ == '__main__':
+    inputs = torch.randn((4, 192, 16, 16))
+    b = BitsEstimator(192)
+    res = b(inputs)
+    print(res.size())
