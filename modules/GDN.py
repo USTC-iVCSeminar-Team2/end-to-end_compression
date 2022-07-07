@@ -23,7 +23,7 @@ class SetMinBoundary(Function):
         """
         input, b = ctx.saved_tensors
         passthrough_map = input > b
-        return passthrough_map.type(grad_output.dtype) * grad_output
+        return passthrough_map.type(grad_output.dtype) * grad_output,None
 
 
 class GDN(nn.Module):

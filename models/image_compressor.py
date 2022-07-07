@@ -5,8 +5,9 @@ from modules import *
 
 class ImageCompressor(nn.Module):
 
-    def __init__(self) -> None:
+    def __init__(self,a) -> None:
         super(ImageCompressor, self).__init__()
+        self.a = a
         self.encoder = Analysis_net(192)
         self.decoder = Synthesis_net(192)
         self.bit_estimator = BitsEstimator(192, K=5)
@@ -44,7 +45,7 @@ class ImageCompressor(nn.Module):
         # D loss
         distortion = torch.mean((inputs - rec_imgs) ** 2)
         # total loss
-        loss = total_bits + Lambda * (255 **2 ) * distortion
+        loss = total_bits + self.a.Lambda * (255 **2 ) * distortion
         return loss, bbp, distortion
 
     def quantize(self, y, is_train=False):
@@ -66,10 +67,3 @@ class ImageCompressor(nn.Module):
         rec_img = self.decoder(y_hat)
         return rec_img
 
-
-if __name__ == '__main__':
-    i = ImageCompressor()
-    i = i.cuda()
-    input_image = torch.randn((8, 3, 256, 256)).cuda()
-    rec_img = i.inference(input_image)
-    print(input_image)

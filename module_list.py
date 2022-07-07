@@ -4,7 +4,7 @@ import torch
 def compressor_list(a, h):
     if a.model_name == 'image_compressor':
         from models.image_compressor import ImageCompressor
-        model = ImageCompressor()
+        model = ImageCompressor(a)
         print('Successfully load model: {}'.format(a.model_name))
         return model
     else:
