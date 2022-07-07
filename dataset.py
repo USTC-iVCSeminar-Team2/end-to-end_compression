@@ -13,7 +13,7 @@ class Dataset(torch.utils.data.Dataset):
     def __init__(
         self,
         data_dir,
-        h,
+        h='',
         shuffle=True
     ):
         if not os.path.exists(data_dir):
@@ -40,7 +40,7 @@ class KodacDataset(torch.utils.data.Dataset):
     def __init__(
             self,
             data_dir,
-            h,
+            h='',
     ):
         if not os.path.exists(data_dir):
             raise Exception("{} not available!".format(data_dir))

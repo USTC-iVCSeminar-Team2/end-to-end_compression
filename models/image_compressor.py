@@ -23,7 +23,7 @@ class ImageCompressor(nn.Module):
 
         return bits_map, rec_imgs
 
-    def loss(self, inputs, loss_items, Lambda=0.5):
+    def loss(self, inputs, loss_items, Lambda=0.0067):
         """
         :param inputs: original images
         :param loss_items: include bits_map and reconstruced images
@@ -44,7 +44,7 @@ class ImageCompressor(nn.Module):
         # D loss
         distortion = torch.mean((inputs - rec_imgs) ** 2)
         # total loss
-        loss = total_bits + Lambda * distortion
+        loss = total_bits + Lambda * (255 **2 ) * distortion
         return loss, bbp, distortion
 
     def quantize(self, y, is_train=False):

@@ -105,8 +105,8 @@ def train(rank, a, h):
 
             # Calculate loss
             loss_items = compressor(img)
-            loss, bit_rate, distortion = compressor.module.loss(loss_items) if h.num_gpus > 1 \
-                                    else compressor.loss(loss_items)
+            loss, bit_rate, distortion = compressor.module.loss(img, loss_items, Lambda=a.Lambda) if h.num_gpus > 1 \
+                                    else compressor.loss(img, loss_items, Lambda=a.Lambda)
 
             # Optimize
             optim_com.zero_grad()
@@ -177,6 +177,7 @@ def main():
         '--summary_interval': The interval steps to save your curves on tensorboard
         '--validation_interval': The interval steps to do validate
         '--fine_tuning': Finetune or not
+        '--Lambda': The lambda setting for RD loss
     '''
 
     parser.add_argument('--model_name', default='', type=str)
@@ -190,6 +191,7 @@ def main():
     parser.add_argument('--summary_interval', default=100, type=int)
     parser.add_argument('--validation_interval', default=1000, type=int)
     parser.add_argument('--fine_tuning', default=False, type=bool)
+    parser.add_argument('--Lambda', default=0.0067, type=float)
 
     a = parser.parse_args()
 
