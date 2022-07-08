@@ -56,7 +56,7 @@ def train(rank, a, h):
 
     # Put the models to DDP
     if h.num_gpus > 1:
-        compressor = DistributedDataParallel(compressor, device_ids=[rank]).to(device)
+        compressor = DistributedDataParallel(compressor, device_ids=[rank], find_unused_parameters=True).to(device)
 
     # Init optimizer
     optim_com = optimizer_list(compressor, h)
