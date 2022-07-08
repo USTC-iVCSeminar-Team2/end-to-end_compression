@@ -14,6 +14,9 @@ class Node(object):
 
 class HuffmanTree(object):
     def __init__(self, prob: dict):
+        """
+        :param prob: 256个整数的概率分布，神经网络的192个输出层对应192个HuffmanTree
+        """
         self.prob = prob
         self.num_node = len(self.prob)
         self.lable = self.num_node  # new node label
