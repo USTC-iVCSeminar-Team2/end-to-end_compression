@@ -28,7 +28,7 @@ def train(rank, a, h):
     device = torch.device('cuda:{:d}'.format(rank))
 
     # Import model
-    compressor = compressor_list(a, h).to(device)
+    compressor = compressor_list(a, h, rank).to(device)
 
     # Print the model and the saving path
     save_path = os.path.join(a.checkpoint_path, a.model_name)
@@ -56,7 +56,7 @@ def train(rank, a, h):
 
     # Put the models to DDP
     if h.num_gpus > 1:
-        compressor = DistributedDataParallel(compressor, device_ids=[rank]).to(device)
+        compressor = DistributedDataParallel(compressor, device_ids=[rank], find_unused_parameters=True).to(device)
 
     # Init optimizer
     optim_com = optimizer_list(compressor, h)
@@ -143,6 +143,7 @@ def train(rank, a, h):
                     with torch.no_grad():
                         for j, batch in enumerate(validation_loader):
                             img = batch
+                            img = img.to(device, non_blocking=True)
                             rec_img = compressor.module.inference(img) if h.num_gpus > 1 else compressor.inference(img)
 
                             val_err_distortion += F.mse_loss(img, rec_img).item()
