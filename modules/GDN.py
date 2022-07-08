@@ -74,7 +74,5 @@ class GDN(nn.Module):
 
 if __name__ == '__main__':
     a = torch.randn(4,2,2)
-    b = torch.tensor([1,2,3,4]).view(4,1,1)
-    c = a*b
+    b = torch.round(a)
     print(a)
-    print(c)
