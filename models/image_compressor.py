@@ -42,12 +42,12 @@ class ImageCompressor(nn.Module):
                 0,
                 50))
         img_shape = rec_imgs.size()
-        bbp = total_bits / (img_shape[0] * img_shape[2] * img_shape[3])
+        bpp = total_bits / (img_shape[0] * img_shape[2] * img_shape[3])
         # D loss
         distortion = torch.mean((inputs - rec_imgs) ** 2)
         # total loss
-        loss = bbp + self.a.Lambda * (255 **2 ) * distortion
-        return loss, bbp, distortion
+        loss = bpp + self.a.Lambda * (255 **2 ) * distortion
+        return loss, bpp, distortion
 
     def quantize(self, y, is_train=False):
         if is_train:
