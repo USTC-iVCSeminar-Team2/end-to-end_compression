@@ -192,7 +192,7 @@ def main():
     parser.add_argument('--summary_interval', default=100, type=int)
     parser.add_argument('--validation_interval', default=1000, type=int)
     parser.add_argument('--fine_tuning', default=False, type=bool)
-    parser.add_argument('--Lambda', default=0.0067, type=float)
+    parser.add_argument('--Lambda', default=8192, type=int)
 
     a = parser.parse_args()
 

@@ -46,7 +46,8 @@ class ImageCompressor(nn.Module):
         # D loss
         distortion = torch.mean((inputs - rec_imgs) ** 2)
         # total loss
-        loss = total_bits + self.a.Lambda * (255 **2 ) * distortion
+        # loss = total_bits + self.a.Lambda * (255 **2 ) * distortion
+        loss = bbp + self.a.Lambda * distortion
         return loss, bbp, distortion
 
     def quantize(self, y, is_train=False):
