@@ -95,7 +95,7 @@ class HuffmanTree(object):
         """
         if not root:
             return
-        elif root.label < 4:
+        elif root.label < 256:
             self.encode_map[root.label] = "".join(self.buffer[:length])
         self.buffer[length] = '0'
         self.preorder_traversal(root.left, length + 1)
