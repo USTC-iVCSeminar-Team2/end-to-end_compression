@@ -118,4 +118,4 @@ if __name__ == '__main__':
     h = HuffmanTree(prob)
     img = torch.tensor(a)
     code = h.encoder(img)
-    print("优化位数:",img.size()[0]*img.size()[1]*8-len(code))
+    print("优化位数:", 8, len(code) / (img.size()[0] * img.size()[1]))
