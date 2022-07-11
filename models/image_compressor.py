@@ -21,7 +21,7 @@ class ImageCompressor(nn.Module):
         y = self.encoder(inputs)
         y_hat = self.quantize(y, is_train=True)
         bits_map = self.bit_estimator(y_hat)
-        rec_imgs = self.decoder(y_hat)
+        rec_imgs = torch.clamp(self.decoder(y_hat),0,255)
 
         return bits_map, rec_imgs
 
@@ -65,6 +65,6 @@ class ImageCompressor(nn.Module):
         """
         y = self.encoder(img)
         y_hat = self.quantize(y, is_train=False)
-        rec_img = self.decoder(y_hat)
+        rec_img = torch.clamp(self.decoder(y_hat),0,255)
         return rec_img
 
