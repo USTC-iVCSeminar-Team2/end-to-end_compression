@@ -106,7 +106,7 @@ def train(rank, a, h):
             # Calculate loss
             loss_items = compressor(img)
             loss, bit_rate, distortion = compressor.module.loss(img, loss_items, Lambda=a.Lambda) if h.num_gpus > 1 \
-                                    else compressor.loss(img, loss_items, Lambda=a.Lambda)
+                                    else compressor.loss(img, loss_items)
 
             # Optimize
             optim_com.zero_grad()
