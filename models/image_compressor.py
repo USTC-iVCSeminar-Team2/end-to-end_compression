@@ -20,10 +20,9 @@ class ImageCompressor(nn.Module):
         """
         y = self.encoder(inputs)
         y_hat = self.quantize(y, is_train=True)
-        bits_map = self.bit_estimator(y_hat)
-        rec_imgs = torch.clamp(self.decoder(y_hat),0,255)
+        rec_imgs = torch.clamp(self.decoder(y_hat),0,1)
 
-        return bits_map, rec_imgs
+        return y_hat, rec_imgs
 
     def loss(self, inputs, loss_items):
         """
@@ -32,12 +31,12 @@ class ImageCompressor(nn.Module):
         :param Lambda: trade-off
         :return:
         """
-        bits_map, rec_imgs = loss_items
+        y_hat, rec_imgs = loss_items
         # R loss
         total_bits = torch.sum(
             torch.clamp(
                 (-torch.log(
-                    self.bit_estimator(bits_map + 0.5) - self.bit_estimator(bits_map - 0.5) + 1e-6)) / torch.log(
+                    self.bit_estimator(y_hat + 0.5) - self.bit_estimator(y_hat - 0.5) + 1e-6)) / torch.log(
                     torch.tensor(2.0)),
                 0,
                 50))
@@ -65,6 +64,6 @@ class ImageCompressor(nn.Module):
         """
         y = self.encoder(img)
         y_hat = self.quantize(y, is_train=False)
-        rec_img = torch.clamp(self.decoder(y_hat),0,255)
+        rec_img = torch.clamp(self.decoder(y_hat),0,1)
         return rec_img
 
