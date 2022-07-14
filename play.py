@@ -2,9 +2,9 @@
 for doing experiment
 """
 import torch
+import numpy as np
 
-f = torch.ones((16,)).view(2,1,8)
-matrix = torch.tensor([1,2,3,4,5,6,7,8],dtype=torch.float32).view(1,8)
-res = matrix+f
-print(f)
-print(res)
+a = torch.ones((8,192,16,16))
+b = a.permute((1,0,2,3))
+c = b.reshape(192,1,-1)
+print(c.size())

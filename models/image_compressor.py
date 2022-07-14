@@ -11,7 +11,7 @@ class ImageCompressor(nn.Module):
         self.device = torch.device('cuda:{:d}'.format(rank))
         self.encoder = Analysis_net(192)
         self.decoder = Synthesis_net(192)
-        self.bit_estimator = BitsEstimator((int(h.batch_size/h.num_gpus),192,16,16), K=5)
+        self.bit_estimator = BitsEstimator(192, K=5)
 
     def forward(self, inputs):
         """

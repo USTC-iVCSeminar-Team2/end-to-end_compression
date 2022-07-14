@@ -4,6 +4,9 @@ import argparse
 from utils import load_checkpoint
 from PIL import Image
 from torchvision import transforms
+import json
+from env import AttrDict, build_env
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_name', default='image_compressor', type=str)
@@ -21,9 +24,15 @@ parser.add_argument('--Lambda', default=0.0067, type=float)
 
 a = parser.parse_args()
 
+with open(a.config_file) as f:
+    data = f.read()
+json_config = json.loads(data)
+h = AttrDict(json_config)
+build_env(a.config_file, 'config.json', os.path.join(a.checkpoint_path, a.model_name))
+
 device = torch.device('cuda:0')
-compressor = ImageCompressor(a, 0)
-state_dict_com = load_checkpoint(r"./checkpoint/image_compressor/image_compressor_best", device)
+compressor = ImageCompressor(a, h,0)
+state_dict_com = load_checkpoint(r"./checkpoint/image_compressor/image_compressor_00205000.00205000", device)
 compressor.load_state_dict(state_dict_com['compressor'])
 
 image = Image.open(r"C:\Users\EsakaK\Desktop\1.png").convert('RGB')
@@ -31,6 +40,9 @@ transform = transforms.Compose([
     transforms.ToTensor()
 ])
 img = transform(image)
-img = img.unsqueeze(0)
+img = img.unsqueeze(0).cuda()
+compressor = compressor.to(device)
+
 y = compressor.encoder(img)
-print(img)
+y_hat = compressor.quantize(y)
+print(y_hat.size())

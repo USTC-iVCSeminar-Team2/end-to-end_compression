@@ -4,29 +4,27 @@ from torch.nn import functional as F
 
 
 class EstimatorUnit(nn.Module):
-    def __init__(self, inputs_size, node_size=3, head=False, tail=False):
+    def __init__(self, num_channel, node_size=3, head=False, tail=False):
         """
         :param num_channel: input's channel number
         :param tail: is the Kth Unit? True/False
         """
         super(EstimatorUnit, self).__init__()
-        self.inputs_size = inputs_size
-        self.batch_size, self.num_channel, self.height, self.width = inputs_size
-        self.num_points = self.batch_size * self.height * self.width
+        self.num_channel = num_channel
         self.head = head
         self.tail = tail
         if self.head:
             self.h = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, 1), 0, 0.01))
-            self.a = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, self.num_points), 0, 0.01))
-            self.b = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, self.num_points), 0, 0.01))
+            self.a = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, 1), 0, 0.01))
+            self.b = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, 1), 0, 0.01))
         elif self.tail:
             self.h = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, 1, node_size), 0, 0.01))
             self.a = None
-            self.b = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, 1, self.num_points), 0, 0.01))
+            self.b = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, 1, 1), 0, 0.01))
         else:
             self.h = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, node_size), 0, 0.01))
-            self.a = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, self.num_points), 0, 0.01))
-            self.b = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, self.num_points), 0, 0.01))
+            self.a = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, 1), 0, 0.01))
+            self.b = nn.Parameter(nn.init.normal_(torch.zeros(self.num_channel, node_size, 1), 0, 0.01))
 
     def forward(self, inputs):
         """
@@ -44,26 +42,27 @@ class EstimatorUnit(nn.Module):
 
 
 class BitsEstimator(nn.Module):
-    def __init__(self, inputs_size, K=4):
+    def __init__(self, num_channel, K=4):
         super(BitsEstimator, self).__init__()
-        self.inputs_size = inputs_size
-        self.batch_size, self.num_channel, self.height, self.width = inputs_size
-        self.num_points = self.batch_size * self.height * self.width
+        self.num_channel = num_channel
         self.units = nn.ModuleList()
-        self.units.append(EstimatorUnit(self.inputs_size, head=True))
+        self.units.append(EstimatorUnit(self.num_channel, head=True))
         for i in range(1, K - 1):
-            self.units.append(EstimatorUnit(self.inputs_size))
-        self.units.append(EstimatorUnit(self.inputs_size, tail=True))
+            self.units.append(EstimatorUnit(self.num_channel))
+        self.units.append(EstimatorUnit(self.num_channel, tail=True))
 
     def forward(self, inputs):
-        x = inputs.view(self.num_channel, 1, self.num_points)
+        # permute
+        size = inputs.size()
+        x = inputs.permute((1, 0, 2, 3)).reshape(self.num_channel,1,-1)
         for unit in self.units:
             x = unit(x)
-        return x.view(self.inputs_size)
+        p = x.reshape(self.num_channel,size[0],*size[2:]).permute((1,0,2,3))
+        return p
 
 
 if __name__ == '__main__':
     inputs = torch.randn((4, 192, 16, 16))
-    b = BitsEstimator(inputs.size())
+    b = BitsEstimator(192)
     res = b(inputs)
     print(res.size())
