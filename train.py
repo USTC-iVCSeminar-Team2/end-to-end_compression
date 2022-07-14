@@ -14,13 +14,11 @@ from module_list import compressor_list, optimizer_list
 from dataset import Dataset
 from utils import scan_checkpoint, load_checkpoint, save_checkpoint
 
-
 # Speed up when the model structure is fixed
 torch.backends.cudnn.benchmark = True
 
 
 def train(rank, a, h):
-
     # Init DDP devices
     if h.num_gpus > 1:
         init_process_group(backend=h.dist_config['dist_backend'], init_method=h.dist_config['dist_url'],
@@ -82,7 +80,7 @@ def train(rank, a, h):
                                        pin_memory=True,
                                        drop_last=True)
 
-    # Init tensorboard
+        # Init tensorboard
         sw = SummaryWriter(os.path.join(save_path, 'logs'))
 
     # Start training
@@ -90,7 +88,7 @@ def train(rank, a, h):
     for epoch in range(max(0, last_epoch), a.training_epochs):
         if rank == 0:
             start = time.time()
-            print("Epoch: {}".format(epoch+1))
+            print("Epoch: {}".format(epoch + 1))
 
         # Use different random seed every epoch
         if h.num_gpus > 1:
@@ -104,15 +102,16 @@ def train(rank, a, h):
             img = torch.autograd.Variable(img.to(device, non_blocking=True))
 
             # Calculate loss
-            loss_items = compressor(img)
-            loss, bit_rate, distortion = compressor.module.loss(img, loss_items, Lambda=a.Lambda) if h.num_gpus > 1 \
-                                    else compressor.loss(img, loss_items)
+            """loss_items = compressor(img)
+            loss, bit_rate, distortion = compressor.module.loss(img, loss_items) if h.num_gpus > 1 \
+                                    else compressor.loss(img, loss_items)"""
+            loss, bit_rate, distortion, _ = compressor.module(img) if h.num_gpus > 1 \
+                else compressor(img)
 
             # Optimize
             optim_com.zero_grad()
             loss.backward()
             optim_com.step()
-
             if rank == 0:
                 # STDOUT logging
                 if steps % a.stdout_interval == 0:
@@ -148,7 +147,7 @@ def train(rank, a, h):
 
                             val_err_distortion += F.mse_loss(img, rec_img).item()
 
-                        val_distortion = val_err_distortion / (j+1)
+                        val_distortion = val_err_distortion / (j + 1)
                         sw.add_scalar("validation/distortion", val_distortion, steps)
 
                     compressor.train()
@@ -156,7 +155,7 @@ def train(rank, a, h):
             steps += 1
 
         scheduler_com.step()
-        
+
         if rank == 0:
             print('Time taken for epoch {} is {} sec\n'.format(epoch + 1, int(time.time() - start)))
 

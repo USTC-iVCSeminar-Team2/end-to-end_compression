@@ -58,7 +58,7 @@ class BitsEstimator(nn.Module):
         for unit in self.units:
             x = unit(x)
         p = x.reshape(self.num_channel,size[0],*size[2:]).permute((1,0,2,3))
-        return p
+        return p 
 
 
 if __name__ == '__main__':

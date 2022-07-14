@@ -5,9 +5,10 @@ from modules import *
 
 class ImageCompressor(nn.Module):
 
-    def __init__(self,a,h, rank) -> None:
+    def __init__(self, a, h, rank) -> None:
         super(ImageCompressor, self).__init__()
         self.a = a
+        self.h = h
         self.device = torch.device('cuda:{:d}'.format(rank))
         self.encoder = Analysis_net(192)
         self.decoder = Synthesis_net(192)
@@ -20,9 +21,24 @@ class ImageCompressor(nn.Module):
         """
         y = self.encoder(inputs)
         y_hat = self.quantize(y, is_train=True)
-        rec_imgs = torch.clamp(self.decoder(y_hat),0,1)
+        rec_imgs = torch.clamp(self.decoder(y_hat), 0, 1)
 
-        return y_hat, rec_imgs
+        # R loss
+        total_bits = torch.sum(
+            torch.clamp(
+                (-torch.log(
+                    self.bit_estimator(y_hat + 0.5) - self.bit_estimator(y_hat - 0.5) + 1e-6)) / torch.log(
+                    torch.tensor(2.0)),
+                0,
+                50))
+        img_shape = rec_imgs.size()
+        bpp = total_bits / (img_shape[0] * img_shape[2] * img_shape[3])
+        # D loss
+        distortion = torch.mean((inputs - rec_imgs) ** 2)
+        # total loss
+        loss = bpp + self.a.Lambda * (255 ** 2) * distortion
+
+        return loss, bpp, distortion, rec_imgs
 
     def loss(self, inputs, loss_items):
         """
@@ -45,7 +61,7 @@ class ImageCompressor(nn.Module):
         # D loss
         distortion = torch.mean((inputs - rec_imgs) ** 2)
         # total loss
-        loss = bpp + self.a.Lambda * (255 **2 ) * distortion
+        loss = bpp + self.a.Lambda * (255 ** 2) * distortion
         return loss, bpp, distortion
 
     def quantize(self, y, is_train=False):
@@ -64,6 +80,5 @@ class ImageCompressor(nn.Module):
         """
         y = self.encoder(img)
         y_hat = self.quantize(y, is_train=False)
-        rec_img = torch.clamp(self.decoder(y_hat),0,1)
+        rec_img = torch.clamp(self.decoder(y_hat), 0, 1)
         return rec_img
-
