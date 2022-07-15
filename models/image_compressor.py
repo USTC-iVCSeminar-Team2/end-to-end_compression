@@ -13,6 +13,7 @@ class ImageCompressor(nn.Module):
         self.encoder = Analysis_net(192)
         self.decoder = Synthesis_net(192)
         self.bit_estimator = BitsEstimator(192, K=5)
+        self.entropy_coder = EntropyCoder(self.bit_estimator)
 
     def forward(self, inputs):
         """
@@ -80,5 +81,9 @@ class ImageCompressor(nn.Module):
         """
         y = self.encoder(img)
         y_hat = self.quantize(y, is_train=False)
+        stream, side_info = self.entropy_coder.compress(y_hat)
+        y_hat_dec = self.entropy_coder.decompress(stream, side_info, y_hat.device)
+        assert torch.equal(y_hat, y_hat_dec), "Entropy code decode for y_hat not consistent !"
         rec_img = torch.clamp(self.decoder(y_hat), 0, 1)
-        return rec_img
+        bpp = len(stream) * 8 / img.shape[2] / img.shape[3]
+        return rec_img, bpp
