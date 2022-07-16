@@ -95,7 +95,7 @@ class HuffmanTree(object):
         """
         if not root:
             return
-        elif root.label < 4:
+        elif root.label < 256:
             self.encode_map[root.label] = "".join(self.buffer[:length])
         self.buffer[length] = '0'
         self.preorder_traversal(root.left, length + 1)
@@ -113,9 +113,10 @@ class HuffmanTree(object):
 
 
 if __name__ == '__main__':
-    a = [[1, 1, 1, 1], [1, 1, 0, 0], [2, 2, 3, 1], [0, 0, 1, 0]]
-    prob = {0: 0.3125, 1: 0.5, 2: 0.125, 3: 0.0625}
+    a = [[1, 1, 1, 1], [1, 1, 0, 0], [2, 2, 5, 1], [0, 0, 1, 0]]
+    prob = {0: 0.3125, 1: 0.5, 2: 0.125, 5: 0.0625}
     h = HuffmanTree(prob)
     img = torch.tensor(a)
     code = h.encoder(img)
-    print("优化位数:",img.size()[0]*img.size()[1]*8-len(code))
+    print("优化位数:", 2, len(code) / (img.size()[0] * img.size()[1]))
+    print(code)

@@ -28,7 +28,7 @@ class SetMinBoundary(Function):
 
 class GDN(nn.Module):
     def __init__(self, num_output_channel, beta_min=1e-6, beta_init=0.1, gamma_min=1e-6, gamma_init=0.1,
-                 min_boundary=2e-5, inverse=False):
+                 min_boundary=2**-5, inverse=False):
         """
         :param beta_min: a small positive value to ensure beta' in range(2e-5,...)
         :param gamma_init: gamma initiated value
