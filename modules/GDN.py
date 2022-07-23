@@ -65,6 +65,7 @@ class GDN(nn.Module):
         # normalization, resemble to 2d conv with kernel size set to 1
         norm = F.conv2d(inputs ** 2, gamma,
                         beta)  # 采用二维卷积来实现[batch_size, channel_size, H, W]*[channel_size, channel_size, 1 ,1 ]
+        norm = torch.sqrt(norm)
         if self.inverse:
             outputs = inputs * norm
         else:
