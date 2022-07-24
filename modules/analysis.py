@@ -12,7 +12,7 @@ class Analysis_net(nn.Module):
         # Input:3   Output:256
         self.conv1 = nn.Conv2d(3, 256, 9, stride=4, padding=4)
         # Init
-        torch.nn.init.xavier_normal_(self.conv1.weight.data, (math.sqrt(2 * (3 + out_channel_N) / (6))))
+        torch.nn.init.xavier_normal_(self.conv1.weight.data, (math.sqrt(2)))
         torch.nn.init.constant_(self.conv1.bias.data, 0.01)
         self.gdn1 = GDN(256)
         # Input:256     Output:192

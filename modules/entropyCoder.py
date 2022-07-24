@@ -4,13 +4,14 @@ import os
 from modules import BitsEstimator
 import torchac
 
+
 class EntropyCoder():
     '''
     Base class for entropy coding
     '''
+
     def __init__(self, _bit_estimator):
         self.bit_estimator = _bit_estimator
-
 
     def pmf_to_cdf(self, pmf):
         '''
@@ -18,7 +19,7 @@ class EntropyCoder():
         :return: cdf from pmf, shape [B, C, 1, L+1]
         '''
         # Make the sum of pmf equal to 1
-        pmf_sum = torch.sum(pmf, dim = 3).reshape(*pmf.shape[0:3], 1)
+        pmf_sum = torch.sum(pmf, dim=3).reshape(*pmf.shape[0:3], 1)
         pmf_norm = torch.div(pmf, pmf_sum)
         # Add pmf together to get cdf
         cdf = torch.zeros(pmf_norm.shape).to(pmf.device)
@@ -27,7 +28,6 @@ class EntropyCoder():
         # Add a beginning 0 for cdf
         cdf = torch.cat((torch.zeros(*pmf.shape[0:3], 1).to(pmf.device), cdf), dim=-1).clamp(min=0.0, max=1.0)
         return cdf
-
 
     @torch.no_grad()
     def compress(self, inputs):
@@ -41,9 +41,9 @@ class EntropyCoder():
         symbol_max = torch.max(inputs).detach().to(torch.float)
         symbol_min = torch.min(inputs).detach().to(torch.float)
         symbol_samples = torch.arange(symbol_min, symbol_max + 1).to(inputs.device)
-        symbol_samples = symbol_samples.reshape(1, 1, 1, -1).repeat(B, C, 1, 1)       # B, C, H, W
+        symbol_samples = symbol_samples.reshape(1, 1, 1, -1).repeat(B, C, 1, 1)  # B, C, H, W
         # Get the pmf and cdf of the above symbols
-        pmf = self.bit_estimator(symbol_samples + 0.5) - self.bit_estimator(symbol_samples - 0.5).detach()
+        pmf = self.bit_estimator(symbol_samples + 0.5) - self.bit_estimator(symbol_samples - 0.5)
         pmf = torch.clamp(pmf, min=0.0, max=1.0)
         cdf = self.pmf_to_cdf(pmf)
         cdf = cdf.reshape(B, C, 1, 1, -1).repeat(1, 1, H, W, 1).to(torch.device('cpu'))
@@ -90,7 +90,7 @@ class EntropyCoder():
         if filepath:
             with open(filepath, 'wb') as f:
                 f.write(stream)
-        return 8*len(stream)
+        return 8 * len(stream)
         # print("Total bits: {:d}".format(8*len(stream)))
 
     def decode(self, filepath, device=torch.device('cpu')):
@@ -107,9 +107,10 @@ class EntropyCoder():
         W = struct.unpack('l', stream[-4:])[0]
         return self.decompress(stream[0:-16], (symbol_min, symbol_max, H, W), device=device)
 
+
 if __name__ == '__main__':
-    bit_estimator = BitsEstimator((4, 192, 16, 16), K=4)
+    bit_estimator = BitsEstimator(192, K=4)
     entropy_coder = EntropyCoder(bit_estimator)
-    y_hat = (torch.randn(4, 192, 16, 16) * 10).int()
+    y_hat = (torch.randn(1, 192, 16, 16) * 10).int()
     print(y_hat.type())
     entropy_coder.compress(y_hat)

@@ -1,5 +1,5 @@
-import torch
 from models.image_compressor import ImageCompressor
+import torch
 import argparse
 from utils import load_checkpoint
 from PIL import Image
@@ -36,10 +36,10 @@ build_env(a.config_file, 'config.json', os.path.join(a.checkpoint_path, a.model_
 
 device = torch.device('cuda:0')
 compressor = ImageCompressor(a, h, 0)
-state_dict_com = load_checkpoint(r"E:\Projects\Prj_Seminar\Team2Temp\outputs\image_compressor\image_compressor_00225000", device)
+state_dict_com = load_checkpoint(r"./checkpoint/image_compressor/image_compressor_best.00340000", device)
 compressor.load_state_dict(state_dict_com['compressor'])
 
-image = Image.open(r"E:\Temp\Seminar\vimeo\test\kodim19.png").convert('RGB')
+image = Image.open(r"C:\Users\EsakaK\Desktop\1.png").convert('RGB')
 transform = transforms.Compose([
     transforms.ToTensor()
 ])
@@ -47,22 +47,21 @@ img = transform(image)
 img = img.unsqueeze(0).cuda()
 compressor = compressor.to(device)
 
-y = compressor.encoder(img)
+"""y = compressor.encoder(img)
 y_hat = compressor.quantize(y)
-total_bits = compressor.entropy_coder.encode(y_hat, filepath=r"E:\Temp\Seminar\str.bin")
-y_hat_dec = compressor.entropy_coder.decode(filepath=r"E:\Temp\Seminar\str.bin", device=torch.device('cuda:0'))
+total_bits = compressor.entropy_coder.encode(y_hat, filepath=r"./str.bin")
+y_hat_dec = compressor.entropy_coder.decode(filepath=r"./str.bin", device=torch.device('cuda:0'))
 
 print("Code decode consistence: " + str(torch.equal(y_hat, y_hat_dec)))
 print("Entropy coding length: {:d} bits".format(total_bits))
-print(y_hat.size())
+print(y_hat.size())"""
 
 
 inv_transform = transforms.ToPILImage()
 
 img_reco, bpp = compressor.inference(img)
-img_reco = torch.clamp(compressor.decoder(y_hat_dec), 0, 1)[0,:]
-img_reco = inv_transform(img_reco)
-img_reco.show()
+img_reco = inv_transform(img_reco[0])
+print(img_reco.size,image.size)
 
 psnr = peak_signal_noise_ratio(np.asarray(image), np.asarray(img_reco))
 print("psnr is {:.4f}".format(psnr))

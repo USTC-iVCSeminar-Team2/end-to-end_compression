@@ -28,5 +28,3 @@ class Synthesis_net(nn.Module):
         x = self.deconv2(self.igdn2(x))
         x = self.deconv3(self.igdn3(x))
         return x
-
-

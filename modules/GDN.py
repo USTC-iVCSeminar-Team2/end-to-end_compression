@@ -22,7 +22,9 @@ class SetMinBoundary(Function):
         :return: grandient
         """
         input, b = ctx.saved_tensors
-        passthrough_map = input > b
+        passthrough_1 = input >= b
+        passthrough_2 = grad_output < 0
+        passthrough_map = passthrough_1|passthrough_2
         return passthrough_map.type(grad_output.dtype) * grad_output,None
 
 
