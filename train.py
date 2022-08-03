@@ -143,7 +143,7 @@ def train(rank, a, h):
                         for j, batch in enumerate(validation_loader):
                             img = batch
                             img = img.to(device, non_blocking=True)
-                            rec_img = compressor.module.inference(img) if h.num_gpus > 1 else compressor.inference(img)
+                            rec_img, bpp, _, _ = compressor.module.inference(img) if h.num_gpus > 1 else compressor.inference(img)
 
                             val_err_distortion += F.mse_loss(img, rec_img).item()
 
