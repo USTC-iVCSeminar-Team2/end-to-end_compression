@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-from .GDN import GDN
+from modules import GDN
 import math
 
 class Analysis_net(nn.Module):
@@ -43,4 +43,5 @@ def build_model():
 
 
 if __name__ == '__main__':
-    build_model()
+    # build_model()
+    analysis = Analysis_net()

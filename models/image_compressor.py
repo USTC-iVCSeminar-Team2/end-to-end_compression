@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from modules import *
+from time import time
 
 
 class ImageCompressor(nn.Module):
@@ -79,11 +80,19 @@ class ImageCompressor(nn.Module):
         """
         only use in test and validate
         """
+        time_enc_start = time()
         y = self.encoder(img)
         y_hat = self.quantize(y, is_train=False)
         stream, side_info = self.entropy_coder.compress(y_hat)
+        time_enc_end = time()
+
+        time_dec_start = time()
         y_hat_dec = self.entropy_coder.decompress(stream, side_info, y_hat.device)
-        assert torch.equal(y_hat, y_hat_dec), "Entropy code decode for y_hat not consistent !"
+        # assert torch.equal(y_hat, y_hat_dec), "Entropy code decode for y_hat not consistent !"
         rec_img = torch.clamp(self.decoder(y_hat), 0, 1)
+        time_dec_end = time()
+
+        # print("{:.4f}, {:.4f}".format((time_enc_end - time_enc_start), (time_dec_end - time_dec_start)))
+
         bpp = len(stream) * 8 / img.shape[2] / img.shape[3]
-        return rec_img, bpp
+        return rec_img, bpp, (time_enc_end - time_enc_start), (time_dec_end - time_dec_start)

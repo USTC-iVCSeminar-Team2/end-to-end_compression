@@ -3,6 +3,7 @@ import struct
 import os
 from modules import BitsEstimator
 import torchac
+from time import time
 
 
 class EntropyCoder():
@@ -37,22 +38,38 @@ class EntropyCoder():
         '''
         (B, C, H, W) = inputs.shape
         assert B == 1, "Entropy coder only supports batch size one currently"
+
         # Get a series of symbols according to the minimum and maximum of y_hat
         symbol_max = torch.max(inputs).detach().to(torch.float)
         symbol_min = torch.min(inputs).detach().to(torch.float)
         symbol_samples = torch.arange(symbol_min, symbol_max + 1).to(inputs.device)
-        symbol_samples = symbol_samples.reshape(1, 1, 1, -1).repeat(B, C, 1, 1)  # B, C, H, W
+
+        symbol_samples = symbol_samples.reshape(1, 1, 1, -1).repeat(B, C, 1, 1)       # B, C, H, W
+
         # Get the pmf and cdf of the above symbols
-        pmf = self.bit_estimator(symbol_samples + 0.5) - self.bit_estimator(symbol_samples - 0.5)
+        # t_pmf_start = time()
+        pmf = self.bit_estimator(symbol_samples + 0.5) - self.bit_estimator(symbol_samples - 0.5).detach()
         pmf = torch.clamp(pmf, min=0.0, max=1.0)
+        # t_pmf_end = time()
+
+        # t_cdf_start = time()
         cdf = self.pmf_to_cdf(pmf)
         cdf = cdf.reshape(B, C, 1, 1, -1).repeat(1, 1, H, W, 1).to(torch.device('cpu'))
+        # t_cdf_end = time()
+
         # Shift the y_hat, make its elements start from 0
         inputs_norm = (inputs - symbol_min).to(torch.int16).to(torch.device('cpu'))
+
         # torchac only supports device('cpu')
+        # t_torchac_start = time()
         stream = torchac.encode_float_cdf(cdf, inputs_norm, needs_normalization=True)
+        # t_torchac_end = time()
+
         # The range of the symbols and the latent y shape needs to be transmitted
         side_info = (int(symbol_min), int(symbol_max), H, W)
+
+        # print('Compress {:d} {:.4f} {:.4f} {:.4f}'.format(symbol_samples.shape[-1], (t_pmf_end - t_pmf_start),
+        #                                                   (t_cdf_end - t_cdf_start), (t_torchac_end - t_torchac_start)))
         return stream, side_info
 
     @torch.no_grad()
